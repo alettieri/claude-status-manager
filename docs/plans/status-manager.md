@@ -16,7 +16,7 @@ Durable decisions that apply across all phases:
 ---
 
 ## Phase 1: Infrastructure + Project/Worktree CRUD
-**Status**: pending
+**Status**: complete
 
 **User stories**: As a user, I can register projects and worktrees so the system knows what I'm tracking. I can see all my worktrees organized by pipeline stage in a dashboard.
 
@@ -26,15 +26,15 @@ A thin vertical slice that stands up the entire stack end-to-end. Docker Compose
 
 ### Acceptance criteria
 
-- [ ] `docker compose up -d` starts Postgres, `npx prisma migrate dev` creates tables
-- [ ] `sm project add <name> --path <path>` creates a project; `sm project list` shows it
-- [ ] `sm worktree add <name> --project <project> --path <path> --branch <branch>` registers a worktree
-- [ ] `sm worktree list` shows all worktrees with their stage
-- [ ] `sm worktree stage <name> <stage>` updates the pipeline stage
-- [ ] `sm status` shows a summary of all projects and worktrees
-- [ ] Dashboard at `localhost:3000` shows Kanban columns (IDEA, SPEC, PRD, PLAN, EXECUTING, DONE) with worktree cards in the correct column
-- [ ] Clicking a worktree card navigates to a detail page showing worktree info
-- [ ] All API routes return proper error responses for missing/invalid resources
+- [x] `docker compose up -d` starts Postgres, `npx prisma migrate dev` creates tables
+- [x] `sm project add <name> --path <path>` creates a project; `sm project list` shows it
+- [x] `sm worktree add <name> --project <project> --path <path> --branch <branch>` registers a worktree
+- [x] `sm worktree list` shows all worktrees with their stage
+- [x] `sm worktree stage <name> <stage>` updates the pipeline stage
+- [x] `sm status` shows a summary of all projects and worktrees
+- [x] Dashboard at `localhost:3000` shows Kanban columns (IDEA, SPEC, PRD, PLAN, EXECUTING, DONE) with worktree cards in the correct column
+- [x] Clicking a worktree card navigates to a detail page showing worktree info
+- [x] All API routes return proper error responses for missing/invalid resources
 
 ---
 
