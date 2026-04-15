@@ -15,6 +15,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       include: {
         project: { select: { id: true, name: true } },
         artifacts: {
+          where: { deletedAt: null },
           select: { id: true, type: true, title: true, status: true, filePath: true },
           orderBy: { createdAt: "asc" },
         },

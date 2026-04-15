@@ -12,7 +12,10 @@ export async function getWorktreeDetail(id: string) {
     where: { id },
     include: {
       project: true,
-      artifacts: { orderBy: { createdAt: "asc" } },
+      artifacts: {
+        where: { deletedAt: null },
+        orderBy: { createdAt: "asc" },
+      },
       plan: {
         include: {
           phases: {

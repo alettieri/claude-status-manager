@@ -155,4 +155,46 @@ worktreeCommand
     }
   });
 
+worktreeCommand
+  .command("sync <name>")
+  .description(
+    "Scan the worktree directory for spec/PRD markdown files, sync artifact records, and auto-advance stage"
+  )
+  .option("--json", "Output as JSON")
+  .action(async (name, opts) => {
+    try {
+      const worktree = await api.get(`/api/worktrees?name=${encodeURIComponent(name)}`);
+
+      const result = await api.post(`/api/worktrees/${worktree.id}/sync`, {});
+
+      if (opts.json) {
+        printJson(result);
+      } else {
+        process.stdout.write(`Synced artifacts for worktree '${name}':\n`);
+        process.stdout.write(`  Created : ${result.created}\n`);
+        process.stdout.write(`  Updated : ${result.updated}\n`);
+        process.stdout.write(`  Removed : ${result.softDeleted}\n`);
+        if (result.stageAdvanced) {
+          process.stdout.write(`  Stage   : advanced to ${result.stageAdvanced}\n`);
+        }
+
+        if (result.files.created.length > 0) {
+          process.stdout.write(`\nNew artifacts:\n`);
+          for (const f of result.files.created) {
+            process.stdout.write(`  + ${f}\n`);
+          }
+        }
+        if (result.files.softDeleted.length > 0) {
+          process.stdout.write(`\nRemoved (file no longer exists):\n`);
+          for (const f of result.files.softDeleted) {
+            process.stdout.write(`  - ${f}\n`);
+          }
+        }
+      }
+    } catch (err) {
+      console.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
 module.exports = worktreeCommand;

@@ -39,7 +39,7 @@ A thin vertical slice that stands up the entire stack end-to-end. Docker Compose
 ---
 
 ## Phase 2: Artifact Registration + Filesystem Sync
-**Status**: pending
+**Status**: complete
 
 **User stories**: As a user, I can register specs and PRDs so agents can access their content without filesystem access. I can sync a worktree to auto-discover existing docs. I can view spec and PRD content in the dashboard.
 
@@ -49,16 +49,16 @@ Add the Artifact model (SPEC, PRD types) to the Prisma schema. API routes for ar
 
 ### Acceptance criteria
 
-- [ ] `sm artifact add <worktree> --type spec --file <path>` registers an artifact and ingests file content
-- [ ] `sm artifact list <worktree>` shows registered artifacts with type and status
-- [ ] `sm artifact status <id> approved` updates artifact status
-- [ ] `sm artifact refresh <id>` re-reads the file and updates the content snapshot
-- [ ] `sm worktree sync <name>` scans the worktree directory and discovers spec/PRD files
-- [ ] Sync creates new artifact records for discovered files and soft-deletes removed ones
-- [ ] Sync auto-advances worktree stage (e.g., spec found → stage becomes SPEC)
-- [ ] GET `/api/artifacts/:id` returns artifact with content snapshot
-- [ ] Dashboard worktree detail shows Spec and PRD tabs with rendered markdown content
-- [ ] Syncing a real worktree (e.g., ai-visibility) discovers existing spec files
+- [x] `sm artifact add <worktree> --type spec --file <path>` registers an artifact and ingests file content
+- [x] `sm artifact list <worktree>` shows registered artifacts with type and status
+- [x] `sm artifact status <id> approved` updates artifact status
+- [x] `sm artifact refresh <id>` re-reads the file and updates the content snapshot
+- [x] `sm worktree sync <name>` scans the worktree directory and discovers spec/PRD files
+- [x] Sync creates new artifact records for discovered files and soft-deletes removed ones
+- [x] Sync auto-advances worktree stage (e.g., spec found → stage becomes SPEC)
+- [x] GET `/api/artifacts/:id` returns artifact with content snapshot
+- [x] Dashboard worktree detail shows Spec and PRD tabs with rendered markdown content
+- [x] Syncing a real worktree (e.g., ai-visibility) discovers existing spec files
 
 ---
 
