@@ -6,7 +6,9 @@ A local project tracking tool for managing the spec → PRD → plan → executi
 
 ```bash
 docker compose up -d          # start postgres
+pnpm install                  # install dependencies
 npx prisma migrate dev        # run migrations
+pnpm link --global            # install `sm` CLI globally (symlinked, edits take effect immediately)
 pnpm dev                      # start Next.js (dashboard + API on localhost:3000)
 ```
 
@@ -96,6 +98,9 @@ Pass `--json` to any command for machine-readable output.
 
 ### CLI
 
+- Entry point: `cli/index.js` with `#!/usr/bin/env node` shebang
+- Registered as `sm` via the `bin` field in `package.json`
+- Installed globally during development with `pnpm link --global` (symlinked — source edits take effect immediately)
 - Each subcommand in its own file under `cli/commands/`
 - Commands call the API via fetch — never import Prisma directly
 - Plain text output by default, `--json` flag for structured output

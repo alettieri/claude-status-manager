@@ -26,8 +26,12 @@ pnpm install
 # Start Postgres
 docker compose up -d
 
-# Run migrations
+# Install dependencies and run migrations
+pnpm install
 npx prisma migrate dev
+
+# Install the `sm` CLI globally (symlinked to source — edits take effect immediately)
+pnpm link --global
 
 # Start the app (dashboard + API)
 pnpm dev
