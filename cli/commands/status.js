@@ -2,6 +2,20 @@ const { Command } = require("commander");
 const { api } = require("../lib/api");
 const { printJson } = require("../lib/output");
 
+const TASK_STATUS_ICONS = {
+  PENDING: "○",
+  IN_PROGRESS: "◉",
+  COMPLETED: "✓",
+  FAILED: "✗",
+};
+
+const PHASE_STATUS_ICONS = {
+  PENDING: "○",
+  IN_PROGRESS: "◉",
+  COMPLETED: "✓",
+  SKIPPED: "—",
+};
+
 const STAGE_ORDER = ["IDEA", "SPEC", "PRD", "PLAN", "EXECUTING", "DONE"];
 
 const statusCommand = new Command("status")
@@ -97,7 +111,62 @@ async function showWorktreeDetail(name, asJson) {
   }
 
   if (detail.plan) {
-    process.stdout.write(`\n  Plan: ${detail.plan.title}  [${detail.plan.status}]\n`);
+    const plan = detail.plan;
+    process.stdout.write(`\n  Plan: ${plan.title}  [${plan.status}]\n`);
+
+    if (plan.phases && plan.phases.length > 0) {
+      // Aggregate totals across the whole plan
+      let planTotal = 0;
+      let planCompleted = 0;
+
+      for (const phase of plan.phases) {
+        const tasks = phase.tasks || [];
+        const total = tasks.length;
+        const completed = tasks.filter((t) => t.status === "COMPLETED").length;
+        const inProgress = tasks.filter((t) => t.status === "IN_PROGRESS").length;
+        const failed = tasks.filter((t) => t.status === "FAILED").length;
+
+        planTotal += total;
+        planCompleted += completed;
+
+        const phaseIcon = PHASE_STATUS_ICONS[phase.status] ?? "?";
+        const progressStr =
+          total > 0 ? `  ${completed}/${total} tasks` : "  no tasks";
+
+        process.stdout.write(
+          `\n    ${phaseIcon} Phase ${phase.order}: ${phase.name}  [${phase.status}]${progressStr}\n`
+        );
+
+        // Show individual tasks
+        for (const task of tasks) {
+          const icon = TASK_STATUS_ICONS[task.status] ?? "?";
+          const agentStr = task.agentId ? `  @${task.agentId}` : "";
+          const resultStr = task.result ? `  → ${task.result.slice(0, 60)}` : "";
+          process.stdout.write(
+            `        ${icon} ${task.subject}${agentStr}${resultStr}\n`
+          );
+        }
+
+        // Surface any failed task count as a warning
+        if (failed > 0) {
+          process.stdout.write(`        ! ${failed} failed task${failed !== 1 ? "s" : ""}\n`);
+        }
+
+        // Surface in-progress count
+        if (inProgress > 0) {
+          process.stdout.write(
+            `        ~ ${inProgress} task${inProgress !== 1 ? "s" : ""} in progress\n`
+          );
+        }
+      }
+
+      if (planTotal > 0) {
+        const pct = Math.round((planCompleted / planTotal) * 100);
+        process.stdout.write(
+          `\n  Progress: ${planCompleted}/${planTotal} tasks completed (${pct}%)\n`
+        );
+      }
+    }
   }
 
   process.stdout.write("\n");

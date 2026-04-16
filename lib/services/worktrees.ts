@@ -2,7 +2,21 @@ import { prisma } from "@/lib/prisma";
 
 export async function getAllWorktreesWithProject() {
   return prisma.worktree.findMany({
-    include: { project: { select: { name: true } } },
+    include: {
+      project: { select: { name: true } },
+      plan: {
+        select: {
+          phases: {
+            select: {
+              _count: { select: { tasks: true } },
+              tasks: {
+                select: { status: true },
+              },
+            },
+          },
+        },
+      },
+    },
     orderBy: { createdAt: "asc" },
   });
 }
@@ -20,7 +34,12 @@ export async function getWorktreeDetail(id: string) {
         include: {
           phases: {
             orderBy: { order: "asc" },
-            include: { _count: { select: { tasks: true } } },
+            include: {
+              _count: { select: { tasks: true } },
+              tasks: {
+                orderBy: { order: "asc" },
+              },
+            },
           },
         },
       },

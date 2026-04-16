@@ -87,7 +87,7 @@ Add Plan and Phase models to the Prisma schema. Plan is DB-owned with title, des
 ---
 
 ## Phase 4: Task Execution Layer
-**Status**: pending
+**Status**: complete
 
 **User stories**: As an agent, I can claim the next available task, report completion or failure, and see what's assigned to me. As a user, I can see real-time task progress with agent assignments in the dashboard.
 
@@ -97,17 +97,17 @@ Add the Task model to the Prisma schema. API routes for task CRUD, the atomic `n
 
 ### Acceptance criteria
 
-- [ ] `sm task next <phase-id> --agent <agentId>` atomically claims the next pending task
-- [ ] Two concurrent `task next` calls for the same phase do not claim the same task
-- [ ] `sm task complete <id> --result "done"` marks task completed with result text
-- [ ] `sm task fail <id> --reason "error"` marks task failed with reason
-- [ ] `sm task list --phase <id>` shows tasks with status and agent assignment
-- [ ] `sm task list --status in_progress` filters across all phases
-- [ ] GET `/api/tasks/active` returns all in-progress tasks across all projects
-- [ ] `sm status <worktree>` shows detailed phase/task progress
-- [ ] Dashboard phase cards show expandable task lists with status, agent, and result
-- [ ] Dashboard worktree cards in Kanban view show progress bars based on task completion
-- [ ] Dashboard refreshes automatically to reflect agent progress
+- [x] `sm task next <phase-id> --agent <agentId>` atomically claims the next pending task
+- [x] Two concurrent `task next` calls for the same phase do not claim the same task
+- [x] `sm task complete <id> --result "done"` marks task completed with result text
+- [x] `sm task fail <id> --reason "error"` marks task failed with reason
+- [x] `sm task list --phase <id>` shows tasks with status and agent assignment
+- [x] `sm task list --status in_progress` filters across all phases
+- [x] GET `/api/tasks/active` returns all in-progress tasks across all projects
+- [x] `sm status <worktree>` shows detailed phase/task progress
+- [x] Dashboard phase cards show expandable task lists with status, agent, and result
+- [x] Dashboard worktree cards in Kanban view show progress bars based on task completion
+- [x] Dashboard refreshes automatically to reflect agent progress
 
 ---
 

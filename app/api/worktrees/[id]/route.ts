@@ -20,11 +20,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
           orderBy: { createdAt: "asc" },
         },
         plan: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            _count: { select: { phases: true } },
+          include: {
+            phases: {
+              orderBy: { order: "asc" },
+              include: {
+                tasks: {
+                  orderBy: { order: "asc" },
+                },
+              },
+            },
           },
         },
       },

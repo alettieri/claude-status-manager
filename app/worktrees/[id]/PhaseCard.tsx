@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 
+type Task = {
+  id: string;
+  order: number;
+  subject: string;
+  description: string | null;
+  status: string;
+  agentId: string | null;
+  result: string | null;
+};
+
 type Phase = {
   id: string;
   order: number;
@@ -10,6 +20,7 @@ type Phase = {
   description: string | null;
   acceptanceCriteria: string | null;
   _count: { tasks: number };
+  tasks: Task[];
 };
 
 const STATUS_CONFIG: Record<
@@ -38,6 +49,32 @@ const STATUS_CONFIG: Record<
   },
 };
 
+const TASK_STATUS_CONFIG: Record<
+  string,
+  { color: string; bg: string; label: string }
+> = {
+  PENDING: {
+    color: "var(--text-muted)",
+    bg: "transparent",
+    label: "Pending",
+  },
+  IN_PROGRESS: {
+    color: "var(--accent-executing)",
+    bg: "transparent",
+    label: "In Progress",
+  },
+  COMPLETED: {
+    color: "var(--accent-done)",
+    bg: "transparent",
+    label: "Completed",
+  },
+  FAILED: {
+    color: "#ef4444",
+    bg: "transparent",
+    label: "Failed",
+  },
+};
+
 function StatusIndicator({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.PENDING;
   return (
@@ -63,6 +100,23 @@ function StatusIndicator({ status }: { status: string }) {
       />
       {cfg.label}
     </span>
+  );
+}
+
+function TaskStatusDot({ status }: { status: string }) {
+  const cfg = TASK_STATUS_CONFIG[status] ?? TASK_STATUS_CONFIG.PENDING;
+  return (
+    <span
+      style={{
+        width: 7,
+        height: 7,
+        borderRadius: "50%",
+        background: cfg.color,
+        flexShrink: 0,
+        display: "inline-block",
+        marginTop: 1,
+      }}
+    />
   );
 }
 
@@ -135,9 +189,160 @@ function CriteriaList({ raw }: { raw: string }) {
   );
 }
 
+function TaskRow({ task }: { task: Task }) {
+  const cfg = TASK_STATUS_CONFIG[task.status] ?? TASK_STATUS_CONFIG.PENDING;
+  const isComplete = task.status === "COMPLETED";
+  const isFailed = task.status === "FAILED";
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 8,
+        padding: "5px 0",
+        borderBottom: "1px solid var(--border)",
+      }}
+    >
+      {/* Status dot */}
+      <div style={{ paddingTop: 4, flexShrink: 0 }}>
+        <TaskStatusDot status={task.status} />
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Subject line */}
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: isComplete ? "var(--text-muted)" : "var(--text)",
+            textDecoration: isComplete ? "line-through" : "none",
+            lineHeight: 1.4,
+          }}
+        >
+          {task.subject}
+        </div>
+
+        {/* Agent + result row */}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            marginTop: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          {task.agentId && (
+            <span
+              style={{
+                fontSize: 11,
+                color: "var(--accent-executing)",
+                fontFamily: "monospace",
+              }}
+            >
+              @{task.agentId}
+            </span>
+          )}
+          {task.result && (
+            <span
+              style={{
+                fontSize: 11,
+                color: isFailed ? "#ef4444" : "var(--text-muted)",
+                fontStyle: "italic",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                maxWidth: 400,
+              }}
+            >
+              {task.result}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Status label */}
+      <span
+        style={{
+          fontSize: 11,
+          color: cfg.color,
+          flexShrink: 0,
+          fontWeight: isComplete ? 600 : 400,
+        }}
+      >
+        {cfg.label}
+      </span>
+    </div>
+  );
+}
+
+function PhaseProgressBar({ tasks }: { tasks: Task[] }) {
+  if (tasks.length === 0) return null;
+
+  const completed = tasks.filter((t) => t.status === "COMPLETED").length;
+  const inProgress = tasks.filter((t) => t.status === "IN_PROGRESS").length;
+  const completedPct = Math.round((completed / tasks.length) * 100);
+  const inProgressPct = Math.round((inProgress / tasks.length) * 100);
+
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <div
+        style={{
+          height: 4,
+          background: "var(--bg)",
+          borderRadius: 2,
+          overflow: "hidden",
+          display: "flex",
+        }}
+      >
+        {completedPct > 0 && (
+          <div
+            style={{
+              width: `${completedPct}%`,
+              background: "var(--accent-done)",
+              transition: "width 0.3s ease",
+            }}
+          />
+        )}
+        {inProgressPct > 0 && (
+          <div
+            style={{
+              width: `${inProgressPct}%`,
+              background: "var(--accent-executing)",
+              transition: "width 0.3s ease",
+            }}
+          />
+        )}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: 3,
+          fontSize: 10,
+          color: "var(--text-muted)",
+        }}
+      >
+        <span>
+          {completed}/{tasks.length} completed
+        </span>
+        {inProgress > 0 && (
+          <span style={{ color: "var(--accent-executing)" }}>
+            {inProgress} in progress
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function PhaseCard({ phase }: { phase: Phase }) {
   const [expanded, setExpanded] = useState(false);
-  const hasDetails = !!(phase.description || phase.acceptanceCriteria);
+  const hasDetails = !!(
+    phase.description ||
+    phase.acceptanceCriteria ||
+    phase.tasks.length > 0
+  );
 
   return (
     <div
@@ -226,6 +431,11 @@ export function PhaseCard({ phase }: { phase: Phase }) {
             gap: 16,
           }}
         >
+          {/* Progress bar — shown when there are tasks */}
+          {phase.tasks.length > 0 && (
+            <PhaseProgressBar tasks={phase.tasks} />
+          )}
+
           {phase.description && (
             <div>
               <div
@@ -269,6 +479,46 @@ export function PhaseCard({ phase }: { phase: Phase }) {
                 Acceptance criteria
               </div>
               <CriteriaList raw={phase.acceptanceCriteria} />
+            </div>
+          )}
+
+          {/* Task list */}
+          {phase.tasks.length > 0 && (
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: 8,
+                }}
+              >
+                Tasks
+              </div>
+              <div
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: "var(--radius)",
+                  overflow: "hidden",
+                }}
+              >
+                {phase.tasks.map((task, idx) => (
+                  <div
+                    key={task.id}
+                    style={{
+                      padding: "6px 10px",
+                      borderBottom:
+                        idx < phase.tasks.length - 1
+                          ? "1px solid var(--border)"
+                          : "none",
+                    }}
+                  >
+                    <TaskRow task={task} />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

@@ -385,7 +385,7 @@ services:
       POSTGRES_USER: sm
       POSTGRES_PASSWORD: sm_local
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -404,6 +404,6 @@ npm run dev                   # start Next.js (dashboard + API)
 ### Environment
 
 ```
-DATABASE_URL=postgresql://sm:sm_local@localhost:5432/status_manager
+DATABASE_URL=postgresql://sm:sm_local@localhost:5434/status_manager
 SM_API_URL=http://localhost:3000  # used by CLI
 ```

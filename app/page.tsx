@@ -4,6 +4,7 @@ import { STAGES, STAGE_LABELS, STAGE_COLORS } from "@/lib/stages";
 import { WorktreeStage } from "@prisma/client";
 import { RefreshButton } from "./components/RefreshButton";
 import { WorktreeCard } from "./components/WorktreeCard";
+import { AutoRefresh } from "./components/AutoRefresh";
 
 export const revalidate = 0;
 
@@ -17,8 +18,29 @@ export default async function DashboardPage() {
     STAGES.map((s) => [s, worktrees.filter((w) => w.stage === s)])
   ) as Record<WorktreeStage, typeof worktrees>;
 
+  // Compute task summary per worktree for progress bars
+  const taskSummaries = Object.fromEntries(
+    worktrees.map((w) => {
+      const phases = w.plan?.phases ?? [];
+      let total = 0;
+      let completed = 0;
+      let inProgress = 0;
+      for (const phase of phases) {
+        for (const task of phase.tasks) {
+          total++;
+          if (task.status === "COMPLETED") completed++;
+          else if (task.status === "IN_PROGRESS") inProgress++;
+        }
+      }
+      return [w.id, { total, completed, inProgress }];
+    })
+  );
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      {/* Auto-refresh every 5 seconds to surface agent progress */}
+      <AutoRefresh intervalMs={5000} />
+
       {/* Header */}
       <header
         style={{
@@ -141,6 +163,7 @@ export default async function DashboardPage() {
                   projectName={worktree.project.name}
                   stage={stage}
                   stageColor={STAGE_COLORS[stage]}
+                  taskSummary={taskSummaries[worktree.id]}
                 />
               ))}
             </div>
