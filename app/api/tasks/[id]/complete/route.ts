@@ -23,6 +23,27 @@ export async function POST(req: NextRequest, { params }: Params) {
   const { result } = (body ?? {}) as Record<string, unknown>;
 
   try {
+    const task = await prisma.task.findUnique({ where: { id } });
+    if (!task) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    const unmetCriteria = await prisma.acceptanceCriterion.findMany({
+      where: { taskId: id, checked: false },
+      select: { id: true, text: true },
+      orderBy: { order: "asc" },
+    });
+
+    if (unmetCriteria.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Cannot complete: ${unmetCriteria.length} acceptance criteria unmet`,
+          unmet: unmetCriteria,
+        },
+        { status: 400 }
+      );
+    }
+
     const updated = await prisma.task.update({
       where: { id },
       data: {
