@@ -401,6 +401,202 @@ describe("POST /api/worktrees/[id]/plan/import", () => {
     expect(res.status).toBe(400);
     expect(body.error).toMatch(/filePath or content/i);
   });
+
+  it("creates AcceptanceCriterion rows for task-level criteria on import", async () => {
+    const project = await seedProject("import-task-criteria-project");
+    const worktree = await seedWorktree(project.id, "import-task-criteria-wt");
+
+    const markdown = `# Plan: Task Criteria Plan
+
+---
+
+## Phase 1: Implementation
+**Status**: pending
+
+#### Tasks
+
+1. **Build the widget**
+   Do the work.
+
+   #### Acceptance criteria
+   - [ ] Widget renders correctly
+   - [x] Widget is accessible
+
+2. **Write tests**
+   Cover all cases.
+
+`;
+
+    await importPlan(
+      makeRequest("POST", `http://localhost/api/worktrees/${worktree.id}/plan/import`, {
+        content: markdown,
+      }),
+      makeParams(worktree.id)
+    );
+
+    const plan = await prisma.plan.findUnique({
+      where: { worktreeId: worktree.id },
+      include: {
+        phases: {
+          include: {
+            tasks: {
+              include: { criteria: { orderBy: { order: "asc" } } },
+              orderBy: { order: "asc" },
+            },
+          },
+        },
+      },
+    });
+
+    expect(plan).not.toBeNull();
+    const tasks = plan!.phases[0].tasks;
+    expect(tasks).toHaveLength(2);
+
+    const taskOne = tasks[0];
+    expect(taskOne.subject).toBe("Build the widget");
+    expect(taskOne.criteria).toHaveLength(2);
+    expect(taskOne.criteria[0]).toMatchObject({ text: "Widget renders correctly", checked: false, order: 1 });
+    expect(taskOne.criteria[1]).toMatchObject({ text: "Widget is accessible", checked: true, order: 2 });
+  });
+
+  it("preserves criterion order matching markdown position on import", async () => {
+    const project = await seedProject("import-criteria-order-project");
+    const worktree = await seedWorktree(project.id, "import-criteria-order-wt");
+
+    const markdown = `# Plan: Order Plan
+
+---
+
+## Phase 1: Phase
+**Status**: pending
+
+#### Tasks
+
+1. **Task with ordered criteria**
+
+   #### Acceptance criteria
+   - [ ] First criterion
+   - [ ] Second criterion
+   - [x] Third criterion
+
+`;
+
+    await importPlan(
+      makeRequest("POST", `http://localhost/api/worktrees/${worktree.id}/plan/import`, {
+        content: markdown,
+      }),
+      makeParams(worktree.id)
+    );
+
+    const plan = await prisma.plan.findUnique({
+      where: { worktreeId: worktree.id },
+      include: {
+        phases: {
+          include: {
+            tasks: {
+              include: { criteria: { orderBy: { order: "asc" } } },
+            },
+          },
+        },
+      },
+    });
+
+    const criteria = plan!.phases[0].tasks[0].criteria;
+    expect(criteria).toHaveLength(3);
+    expect(criteria[0]).toMatchObject({ text: "First criterion", order: 1 });
+    expect(criteria[1]).toMatchObject({ text: "Second criterion", order: 2 });
+    expect(criteria[2]).toMatchObject({ text: "Third criterion", order: 3, checked: true });
+  });
+
+  it("imports successfully when tasks have no acceptance criteria", async () => {
+    const project = await seedProject("import-no-task-criteria-project");
+    const worktree = await seedWorktree(project.id, "import-no-task-criteria-wt");
+
+    const markdown = `# Plan: No Task Criteria Plan
+
+---
+
+## Phase 1: Phase
+**Status**: pending
+
+#### Tasks
+
+1. **Task without criteria**
+   Just description, no criteria block.
+
+2. **Another task**
+
+`;
+
+    const res = await importPlan(
+      makeRequest("POST", `http://localhost/api/worktrees/${worktree.id}/plan/import`, {
+        content: markdown,
+      }),
+      makeParams(worktree.id)
+    );
+
+    expect(res.status).toBe(201);
+
+    const plan = await prisma.plan.findUnique({
+      where: { worktreeId: worktree.id },
+      include: {
+        phases: {
+          include: {
+            tasks: {
+              include: { criteria: true },
+              orderBy: { order: "asc" },
+            },
+          },
+        },
+      },
+    });
+
+    expect(plan).not.toBeNull();
+    const tasks = plan!.phases[0].tasks;
+    expect(tasks).toHaveLength(2);
+    expect(tasks[0].criteria).toHaveLength(0);
+    expect(tasks[1].criteria).toHaveLength(0);
+  });
+
+  it("does not create AcceptanceCriterion rows when the plan has no tasks", async () => {
+    const project = await seedProject("import-no-tasks-project");
+    const worktree = await seedWorktree(project.id, "import-no-tasks-wt");
+
+    const markdown = `# Plan: No Tasks Plan
+
+---
+
+## Phase 1: Phase
+**Status**: pending
+
+### What to build
+Just a description, no tasks.
+
+### Acceptance criteria
+- [ ] Phase-level criterion
+
+`;
+
+    const res = await importPlan(
+      makeRequest("POST", `http://localhost/api/worktrees/${worktree.id}/plan/import`, {
+        content: markdown,
+      }),
+      makeParams(worktree.id)
+    );
+
+    expect(res.status).toBe(201);
+
+    const criteriaCount = await prisma.acceptanceCriterion.count({
+      where: {
+        task: {
+          phase: {
+            plan: { worktreeId: worktree.id },
+          },
+        },
+      },
+    });
+    expect(criteriaCount).toBe(0);
+  });
 });
 
 // ---------------------------------------------------------------------------

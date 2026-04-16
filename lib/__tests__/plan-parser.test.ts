@@ -355,4 +355,214 @@ describe("exportPlanToMarkdown", () => {
     expect(firstPhaseIndex).toBeLessThan(secondPhaseIndex);
     expect(secondPhaseIndex).toBeLessThan(thirdPhaseIndex);
   });
+
+  it("includes a tasks section with task subjects when tasks are present", () => {
+    const markdown = exportPlanToMarkdown({
+      title: "T",
+      architecturalNotes: null,
+      phases: [
+        {
+          order: 1,
+          name: "Alpha",
+          status: "PENDING",
+          tasks: [
+            { order: 1, subject: "Build the widget", criteria: [] },
+            { order: 2, subject: "Write tests", criteria: [] },
+          ],
+        },
+      ],
+    });
+    expect(markdown).toContain("#### Tasks");
+    expect(markdown).toContain("1. **Build the widget**");
+    expect(markdown).toContain("2. **Write tests**");
+  });
+
+  it("includes task-level acceptance criteria blocks in the export", () => {
+    const markdown = exportPlanToMarkdown({
+      title: "T",
+      architecturalNotes: null,
+      phases: [
+        {
+          order: 1,
+          name: "Alpha",
+          status: "PENDING",
+          tasks: [
+            {
+              order: 1,
+              subject: "Build the widget",
+              criteria: [
+                { text: "Widget renders", checked: false, order: 1 },
+                { text: "Widget is accessible", checked: true, order: 2 },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    expect(markdown).toContain("#### Acceptance criteria");
+    expect(markdown).toContain("- [ ] Widget renders");
+    expect(markdown).toContain("- [x] Widget is accessible");
+  });
+
+  it("omits the tasks section when the tasks array is empty", () => {
+    const markdown = exportPlanToMarkdown({
+      title: "T",
+      architecturalNotes: null,
+      phases: [{ order: 1, name: "Alpha", status: "PENDING", tasks: [] }],
+    });
+    expect(markdown).not.toContain("#### Tasks");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parsePlan — task parsing
+// ---------------------------------------------------------------------------
+
+const PLAN_WITH_TASKS = `# Plan: Task Plan
+
+---
+
+## Phase 1: Implementation
+**Status**: in_progress
+
+### What to build
+Build things.
+
+### Acceptance criteria
+- [ ] Phase criterion one
+- [x] Phase criterion two
+
+#### Tasks
+
+1. **First task**
+   Do the first thing.
+
+   #### Acceptance criteria
+   - [ ] criterion one
+   - [x] criterion two
+
+2. **Second task**
+   Do the second thing.
+
+`;
+
+describe("parsePlan — tasks", () => {
+  it("parses tasks from the '#### Tasks' block within a phase", () => {
+    const result = parsePlan(PLAN_WITH_TASKS);
+    expect(result.phases[0].tasks).toHaveLength(2);
+  });
+
+  it("extracts task order and subject correctly", () => {
+    const result = parsePlan(PLAN_WITH_TASKS);
+    expect(result.phases[0].tasks[0]).toMatchObject({ order: 1, subject: "First task" });
+    expect(result.phases[0].tasks[1]).toMatchObject({ order: 2, subject: "Second task" });
+  });
+
+  it("extracts task description", () => {
+    const result = parsePlan(PLAN_WITH_TASKS);
+    expect(result.phases[0].tasks[0].description).toContain("Do the first thing");
+  });
+
+  it("extracts description for a task that has one", () => {
+    const result = parsePlan(PLAN_WITH_TASKS);
+    expect(result.phases[0].tasks[1].description).toContain("Do the second thing");
+  });
+
+  it("returns PENDING status by default", () => {
+    const result = parsePlan(PLAN_WITH_TASKS);
+    expect(result.phases[0].tasks[0].status).toBe("PENDING");
+  });
+
+  it("does not bleed task content into the phase-level acceptance criteria", () => {
+    const result = parsePlan(PLAN_WITH_TASKS);
+    // Phase AC contains only the phase-level criteria
+    expect(result.phases[0].acceptanceCriteria).toContain("Phase criterion one");
+    expect(result.phases[0].acceptanceCriteria).toContain("Phase criterion two");
+    // Task subjects and task descriptions should not appear in the phase AC block
+    expect(result.phases[0].acceptanceCriteria).not.toContain("First task");
+    expect(result.phases[0].acceptanceCriteria).not.toContain("Do the first thing");
+  });
+
+  it("parses task-level acceptance criteria with correct checked state", () => {
+    const result = parsePlan(PLAN_WITH_TASKS);
+    const criteria = result.phases[0].tasks[0].criteria;
+    expect(criteria).toHaveLength(2);
+    expect(criteria[0]).toMatchObject({ text: "criterion one", checked: false, order: 1 });
+    expect(criteria[1]).toMatchObject({ text: "criterion two", checked: true, order: 2 });
+  });
+
+  it("returns empty criteria array for a task with no '#### Acceptance criteria' block", () => {
+    const result = parsePlan(PLAN_WITH_TASKS);
+    expect(result.phases[0].tasks[1].criteria).toHaveLength(0);
+  });
+
+  it("returns empty tasks array when the phase has no '#### Tasks' block", () => {
+    const result = parsePlan(FULL_MARKDOWN);
+    for (const phase of result.phases) {
+      expect(phase.tasks).toHaveLength(0);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parsePlan — task status
+// ---------------------------------------------------------------------------
+
+describe("parsePlan — task status", () => {
+  it("parses an explicit 'completed' task status", () => {
+    const markdown = `# Plan: T\n\n---\n\n## Phase 1: P\n**Status**: pending\n\n#### Tasks\n\n1. **My task**\n   **Status**: completed\n`;
+    const result = parsePlan(markdown);
+    expect(result.phases[0].tasks[0].status).toBe("COMPLETED");
+  });
+
+  it("parses 'failed' task status", () => {
+    const markdown = `# Plan: T\n\n---\n\n## Phase 1: P\n**Status**: pending\n\n#### Tasks\n\n1. **My task**\n   **Status**: failed\n`;
+    const result = parsePlan(markdown);
+    expect(result.phases[0].tasks[0].status).toBe("FAILED");
+  });
+
+  it("parses 'in_progress' task status", () => {
+    const markdown = `# Plan: T\n\n---\n\n## Phase 1: P\n**Status**: pending\n\n#### Tasks\n\n1. **My task**\n   **Status**: in_progress\n`;
+    const result = parsePlan(markdown);
+    expect(result.phases[0].tasks[0].status).toBe("IN_PROGRESS");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parsePlan + exportPlanToMarkdown — round-trip with tasks and criteria
+// ---------------------------------------------------------------------------
+
+describe("round-trip — tasks and criteria", () => {
+  it("round-trips a plan with tasks and criteria through export then re-parse", () => {
+    const original = parsePlan(PLAN_WITH_TASKS);
+    const exported = exportPlanToMarkdown(original);
+    const roundTripped = parsePlan(exported);
+
+    expect(roundTripped.phases[0].tasks).toHaveLength(2);
+    expect(roundTripped.phases[0].tasks[0].subject).toBe("First task");
+    expect(roundTripped.phases[0].tasks[0].criteria).toHaveLength(2);
+    expect(roundTripped.phases[0].tasks[0].criteria[0].checked).toBe(false);
+    expect(roundTripped.phases[0].tasks[0].criteria[1].checked).toBe(true);
+    expect(roundTripped.phases[0].tasks[1].criteria).toHaveLength(0);
+  });
+
+  it("preserves phase-level criteria independently of task-level criteria on round-trip", () => {
+    const original = parsePlan(PLAN_WITH_TASKS);
+    const exported = exportPlanToMarkdown(original);
+    const roundTripped = parsePlan(exported);
+
+    expect(roundTripped.phases[0].acceptanceCriteria).toContain("Phase criterion one");
+    expect(roundTripped.phases[0].acceptanceCriteria).toContain("Phase criterion two");
+  });
+
+  it("round-trips a plan with no tasks without errors", () => {
+    const original = parsePlan(FULL_MARKDOWN);
+    const exported = exportPlanToMarkdown(original);
+    const roundTripped = parsePlan(exported);
+
+    expect(roundTripped.phases).toHaveLength(original.phases.length);
+    for (const phase of roundTripped.phases) {
+      expect(phase.tasks).toHaveLength(0);
+    }
+  });
 });

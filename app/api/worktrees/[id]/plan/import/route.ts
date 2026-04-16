@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PhaseStatus, WorktreeStage } from "@/prisma/generated/prisma/client";
+import { PhaseStatus, TaskStatus, WorktreeStage } from "@/prisma/generated/prisma/client";
 import { promises as fs } from "fs";
 import path from "path";
 import { prisma } from "@/lib/prisma";
@@ -84,8 +84,9 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const parsed = parsePlan(markdown);
 
-    // Create plan + phases in a single transaction
+    // Create plan + phases + tasks + criteria in a single transaction
     const plan = await prisma.$transaction(async (tx) => {
+      // Create the plan and its phases first
       const created = await tx.plan.create({
         data: {
           worktreeId: id,
@@ -105,6 +106,40 @@ export async function POST(req: NextRequest, { params }: Params) {
           phases: { orderBy: { order: "asc" } },
         },
       });
+
+      // For each phase that has tasks, create tasks and their criteria
+      for (const parsedPhase of parsed.phases) {
+        if (parsedPhase.tasks.length === 0) continue;
+
+        // Find the DB phase that corresponds to this parsed phase by order
+        const dbPhase = created.phases.find((ph) => ph.order === parsedPhase.order);
+        if (!dbPhase) continue;
+
+        for (const parsedTask of parsedPhase.tasks) {
+          await tx.task.create({
+            data: {
+              phaseId: dbPhase.id,
+              subject: parsedTask.subject,
+              order: parsedTask.order,
+              status: parsedTask.status as TaskStatus,
+              ...(parsedTask.description ? { description: parsedTask.description } : {}),
+              ...(parsedTask.criteria.length > 0
+                ? {
+                    criteria: {
+                      createMany: {
+                        data: parsedTask.criteria.map((c) => ({
+                          text: c.text,
+                          checked: c.checked,
+                          order: c.order,
+                        })),
+                      },
+                    },
+                  }
+                : {}),
+            },
+          });
+        }
+      }
 
       // Auto-advance stage to PLAN
       if (isBelowPlan(worktree.stage)) {
