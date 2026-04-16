@@ -9,7 +9,7 @@ docker compose up -d          # start postgres
 pnpm install                  # install dependencies
 npx prisma migrate dev        # run migrations
 pnpm link --global            # install `sm` CLI globally (symlinked, edits take effect immediately)
-pnpm dev                      # start Next.js (dashboard + API on localhost:3000)
+pnpm dev                      # start Next.js (dashboard + API on localhost:4000)
 ```
 
 ## Project Structure
@@ -115,7 +115,7 @@ Pass `--json` to any command for machine-readable output.
 
 ```
 DATABASE_URL=postgresql://sm:sm_local@localhost:5434/status_manager
-SM_API_URL=http://localhost:3000
+SM_API_URL=http://localhost:4000
 ```
 
 ## Key Design Decisions

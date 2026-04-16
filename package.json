@@ -6,7 +6,7 @@
     "sm": "./cli/index.js"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 4000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

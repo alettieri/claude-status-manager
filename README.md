@@ -37,7 +37,7 @@ pnpm link --global
 pnpm dev
 ```
 
-Open http://localhost:3000 for the dashboard.
+Open http://localhost:4000 for the dashboard.
 
 ## Usage
 

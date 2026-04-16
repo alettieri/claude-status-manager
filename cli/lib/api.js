@@ -1,4 +1,4 @@
-const BASE_URL = process.env.SM_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.SM_API_URL || "http://localhost:4000";
 
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;

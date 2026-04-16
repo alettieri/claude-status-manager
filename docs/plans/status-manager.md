@@ -112,7 +112,7 @@ Add the Task model to the Prisma schema. API routes for task CRUD, the atomic `n
 ---
 
 ## Phase 5: Claude Code Skill + Skill Integration
-**Status**: pending
+**Status**: complete
 
 **User stories**: As a skill author, I can integrate status-manager into existing skills so agents automatically track their work. As a user, I can run /execute and see the dashboard update as agents work.
 
@@ -122,13 +122,13 @@ Create the Claude Code skill at `~/.claude/skills/status-manager/SKILL.md` that 
 
 ### Acceptance criteria
 
-- [ ] `~/.claude/skills/status-manager/SKILL.md` exists and documents the full agent protocol
-- [ ] Skill covers: context retrieval (plan show, artifact list), task claiming (task next), reporting (task complete/fail)
-- [ ] `/execute` skill updated to read plan from DB via `sm plan show <worktree> --json`
-- [ ] `/execute` finds resumption point via `sm phase list` instead of markdown grep
-- [ ] `/execute` creates task records per agent step and updates them on completion/failure
-- [ ] `/execute` updates phase status via `sm phase update` instead of editing markdown
-- [ ] `/brainstorming` integration: registers spec artifact after writing design doc
-- [ ] `/write-a-prd` integration: registers PRD artifact after writing
-- [ ] `/prd-to-plan` integration: imports plan into DB after generating markdown
-- [ ] End-to-end: running /execute against a DB-stored plan updates the dashboard in real time
+- [x] `~/.claude/skills/status-manager/SKILL.md` exists and documents the full agent protocol
+- [x] Skill covers: context retrieval (plan show, artifact list), task claiming (task next), reporting (task complete/fail)
+- [x] `/execute` skill updated to read plan from DB via `sm plan show <worktree> --json`
+- [x] `/execute` finds resumption point via `sm phase list` instead of markdown grep
+- [x] `/execute` creates task records per agent step and updates them on completion/failure
+- [x] `/execute` updates phase status via `sm phase update` instead of editing markdown
+- [x] `/brainstorming` integration: registers spec artifact after writing design doc
+- [x] `/write-a-prd` integration: registers PRD artifact after writing
+- [x] `/prd-to-plan` integration: imports plan into DB after generating markdown
+- [x] End-to-end: running /execute against a DB-stored plan updates the dashboard in real time
