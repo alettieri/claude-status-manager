@@ -22,7 +22,10 @@ async function request(path, options = {}) {
   const body = await res.json();
 
   if (!res.ok) {
-    throw new Error(body.error || `HTTP ${res.status}`);
+    const err = new Error(body.error || `HTTP ${res.status}`);
+    err.status = res.status;
+    err.body = body;
+    throw err;
   }
 
   return body;

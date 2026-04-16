@@ -67,7 +67,17 @@ taskCommand
         process.stdout.write(`  Result: ${task.result}\n`);
       }
     } catch (err) {
-      console.error(`Error: ${err.message}`);
+      if (err.status === 400 && Array.isArray(err.body?.unmet)) {
+        const { unmet } = err.body;
+        process.stderr.write(`Cannot complete: ${unmet.length} acceptance criteria unmet\n\n`);
+        for (const criterion of unmet) {
+          const idSuffix = `(${criterion.id.slice(0, 8)})`;
+          process.stderr.write(`  [ ] ${criterion.text.padEnd(44)}  ${idSuffix}\n`);
+        }
+        process.stderr.write(`\nUse \`sm criteria check <id>\` to mark each one done.\n`);
+      } else {
+        console.error(`Error: ${err.message}`);
+      }
       process.exit(1);
     }
   });
@@ -266,6 +276,74 @@ taskCommand
       if (updates.status) {
         process.stdout.write(`  Status: ${updated.status}\n`);
       }
+    } catch (err) {
+      console.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+// ─── sm task criteria <task-id> ───────────────────────────────────────────────
+
+taskCommand
+  .command("criteria <task-id>")
+  .description("List acceptance criteria for a task")
+  .option("--json", "Output as JSON")
+  .action(async (taskId, opts) => {
+    try {
+      const criteria = await api.get(`/api/tasks/${taskId}/criteria`);
+
+      if (opts.json) {
+        printJson(criteria);
+        return;
+      }
+
+      if (criteria.length === 0) {
+        process.stdout.write("No acceptance criteria for this task.\n");
+        return;
+      }
+
+      // Fetch task subject for the header
+      let subject = taskId.slice(0, 8);
+      try {
+        const task = await api.get(`/api/tasks/${taskId}`);
+        if (task?.subject) subject = task.subject;
+      } catch {
+        // Non-fatal — fall back to ID prefix
+      }
+
+      process.stdout.write(`Acceptance criteria for task ${taskId.slice(0, 8)} (${subject})\n\n`);
+
+      const checkedCount = criteria.filter((c) => c.checked).length;
+
+      for (const criterion of criteria) {
+        const box = criterion.checked ? "[x]" : "[ ]";
+        const idSuffix = criterion.id.slice(0, 8);
+        process.stdout.write(`  ${box} ${criterion.text.padEnd(44)}  ${idSuffix}\n`);
+      }
+
+      process.stdout.write(`\n${checkedCount} of ${criteria.length} checked\n`);
+    } catch (err) {
+      console.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+// ─── sm task remove <id> ──────────────────────────────────────────────────────
+
+taskCommand
+  .command("remove <id>")
+  .description("Delete a task")
+  .option("--json", "Output as JSON")
+  .action(async (id, opts) => {
+    try {
+      await api.delete(`/api/tasks/${id}`);
+
+      if (opts.json) {
+        printJson({ removed: true });
+        return;
+      }
+
+      process.stdout.write(`Removed task ${id.slice(0, 8)}\n`);
     } catch (err) {
       console.error(`Error: ${err.message}`);
       process.exit(1);

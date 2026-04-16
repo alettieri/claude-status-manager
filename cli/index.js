@@ -8,6 +8,7 @@ const artifactCommand = require("./commands/artifact");
 const planCommand = require("./commands/plan");
 const phaseCommand = require("./commands/phase");
 const taskCommand = require("./commands/task");
+const criteriaCommand = require("./commands/criteria");
 
 program
   .name("sm")
@@ -21,6 +22,7 @@ program.addCommand(artifactCommand);
 program.addCommand(planCommand);
 program.addCommand(phaseCommand);
 program.addCommand(taskCommand);
+program.addCommand(criteriaCommand);
 
 program.parseAsync(process.argv).catch((err) => {
   console.error(err.message);

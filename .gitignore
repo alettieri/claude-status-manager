@@ -6,3 +6,4 @@ prisma/generated/
 *.tsbuildinfo
 
 .vitest_tmp
+.claude
