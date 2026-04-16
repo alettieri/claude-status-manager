@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getWorktreeDetail } from "@/lib/services/worktrees";
 import { STAGE_LABELS, STAGE_COLORS } from "@/lib/stages";
+import { PhaseCard } from "./PhaseCard";
 
 export const revalidate = 0;
 
@@ -249,59 +250,51 @@ export default async function WorktreeDetailPage({ params, searchParams }: Props
                 No plan yet. Use{" "}
                 <code style={{ fontFamily: "monospace" }}>
                   sm plan create {worktree.name} --title &lt;title&gt;
+                </code>{" "}
+                or{" "}
+                <code style={{ fontFamily: "monospace" }}>
+                  sm plan import {worktree.name} --file &lt;path&gt;
                 </code>
               </EmptyHint>
             ) : (
               <div>
-                <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 15 }}>
-                  {worktree.plan.title}
-                </div>
-                <div style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 12 }}>
-                  Status: {worktree.plan.status} &middot;{" "}
-                  {worktree.plan.phases.length} phase
-                  {worktree.plan.phases.length !== 1 ? "s" : ""}
-                </div>
-                {worktree.plan.phases.map((phase) => (
-                  <div
-                    key={phase.id}
-                    style={{
-                      background: "var(--bg-card)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "var(--radius)",
-                      padding: "10px 14px",
-                      marginBottom: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: "50%",
-                        background: "var(--bg)",
-                        border: "1px solid var(--border)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: "var(--text-muted)",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {phase.order}
-                    </span>
-                    <span style={{ flex: 1, fontWeight: 500 }}>{phase.name}</span>
-                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                      {phase.status}
-                    </span>
-                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                      {phase._count.tasks} task{phase._count.tasks !== 1 ? "s" : ""}
-                    </span>
+                {/* Plan header */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    marginBottom: 16,
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
+                      {worktree.plan.title}
+                    </div>
+                    <div style={{ color: "var(--text-muted)", fontSize: 13 }}>
+                      {worktree.plan.phases.length} phase
+                      {worktree.plan.phases.length !== 1 ? "s" : ""}
+                    </div>
                   </div>
-                ))}
+                  <PlanStatusBadge status={worktree.plan.status} />
+                </div>
+
+                {/* Phase cards */}
+                {worktree.plan.phases.length === 0 ? (
+                  <EmptyHint>
+                    No phases yet. Use{" "}
+                    <code style={{ fontFamily: "monospace" }}>
+                      sm phase add {worktree.plan.id.slice(0, 8)} --name &lt;name&gt; --order 1
+                    </code>
+                  </EmptyHint>
+                ) : (
+                  <div>
+                    {worktree.plan.phases.map((phase) => (
+                      <PhaseCard key={phase.id} phase={phase} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </section>
@@ -378,6 +371,32 @@ function StatusBadge({ status }: { status: string }) {
 function EmptyHint({ children }: { children: React.ReactNode }) {
   return (
     <p style={{ color: "var(--text-muted)", fontSize: 13 }}>{children}</p>
+  );
+}
+
+function PlanStatusBadge({ status }: { status: string }) {
+  const colorMap: Record<string, string> = {
+    DRAFT: "var(--text-muted)",
+    ACTIVE: "var(--accent-executing)",
+    COMPLETED: "var(--accent-done)",
+    ARCHIVED: "var(--border)",
+  };
+  const color = colorMap[status] ?? "var(--text-muted)";
+  return (
+    <span
+      style={{
+        fontSize: 11,
+        fontWeight: 600,
+        color,
+        border: `1px solid ${color}`,
+        borderRadius: 12,
+        padding: "2px 8px",
+        flexShrink: 0,
+        letterSpacing: "0.04em",
+      }}
+    >
+      {status}
+    </span>
   );
 }
 

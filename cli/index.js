@@ -5,6 +5,8 @@ const projectCommand = require("./commands/project");
 const worktreeCommand = require("./commands/worktree");
 const statusCommand = require("./commands/status");
 const artifactCommand = require("./commands/artifact");
+const planCommand = require("./commands/plan");
+const phaseCommand = require("./commands/phase");
 
 program
   .name("sm")
@@ -15,6 +17,8 @@ program.addCommand(projectCommand);
 program.addCommand(worktreeCommand);
 program.addCommand(statusCommand);
 program.addCommand(artifactCommand);
+program.addCommand(planCommand);
+program.addCommand(phaseCommand);
 
 program.parseAsync(process.argv).catch((err) => {
   console.error(err.message);

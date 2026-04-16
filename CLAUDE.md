@@ -114,7 +114,7 @@ Pass `--json` to any command for machine-readable output.
 ## Environment Variables
 
 ```
-DATABASE_URL=postgresql://sm:sm_local@localhost:5432/status_manager
+DATABASE_URL=postgresql://sm:sm_local@localhost:5434/status_manager
 SM_API_URL=http://localhost:3000
 ```
 

@@ -10,7 +10,7 @@ export default defineConfig({
     exclude: ["node_modules/**"],
     fileParallelism: false,
     env: {
-      DATABASE_URL: "postgresql://sm:sm_local@localhost:5432/status_manager_test",
+      DATABASE_URL: "postgresql://sm:sm_local@localhost:5434/status_manager_test",
     },
   },
   resolve: {

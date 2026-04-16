@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: "postgresql://sm:sm_local@localhost:5432/status_manager_test",
+      url: "postgresql://sm:sm_local@localhost:5434/status_manager_test",
     },
   },
 });

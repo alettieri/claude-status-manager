@@ -14,7 +14,7 @@ import { POST as syncWorktree } from "../../worktrees/[id]/sync/route";
 
 const prisma = new PrismaClient({
   datasources: {
-    db: { url: "postgresql://sm:sm_local@localhost:5432/status_manager_test" },
+    db: { url: "postgresql://sm:sm_local@localhost:5434/status_manager_test" },
   },
 });
 

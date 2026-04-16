@@ -63,7 +63,7 @@ Add the Artifact model (SPEC, PRD types) to the Prisma schema. API routes for ar
 ---
 
 ## Phase 3: Plan + Phase Management
-**Status**: pending
+**Status**: complete
 
 **User stories**: As a user, I can create and manage plans in the database, accessible from any directory. I can import existing markdown plans into the DB. I can view plan phases and their status in the dashboard.
 
@@ -73,16 +73,16 @@ Add Plan and Phase models to the Prisma schema. Plan is DB-owned with title, des
 
 ### Acceptance criteria
 
-- [ ] `sm plan create <worktree> --title <title>` creates an empty plan in the DB
-- [ ] `sm plan import <worktree> --file <path>` parses a markdown plan and creates Plan + Phase records
-- [ ] Imported phases have correct name, description, order, acceptance criteria, and status
-- [ ] `sm plan show <worktree>` displays the full plan with phases from any directory
-- [ ] `sm plan export <worktree>` renders the DB plan as markdown matching the original format
-- [ ] `sm phase update <id> --status completed` updates a phase's status
-- [ ] `sm phase list <plan-id>` shows all phases with status
-- [ ] Dashboard Plan tab shows phases with status indicators (pending/in_progress/completed/skipped)
-- [ ] Phase cards are expandable to show description and acceptance criteria
-- [ ] Creating a plan auto-advances worktree stage to PLAN
+- [x] `sm plan create <worktree> --title <title>` creates an empty plan in the DB
+- [x] `sm plan import <worktree> --file <path>` parses a markdown plan and creates Plan + Phase records
+- [x] Imported phases have correct name, description, order, acceptance criteria, and status
+- [x] `sm plan show <worktree>` displays the full plan with phases from any directory
+- [x] `sm plan export <worktree>` renders the DB plan as markdown matching the original format
+- [x] `sm phase update <id> --status completed` updates a phase's status
+- [x] `sm phase list <plan-id>` shows all phases with status
+- [x] Dashboard Plan tab shows phases with status indicators (pending/in_progress/completed/skipped)
+- [x] Phase cards are expandable to show description and acceptance criteria
+- [x] Creating a plan auto-advances worktree stage to PLAN
 
 ---
 

@@ -10,7 +10,7 @@ import { GET as getWorktree, PATCH as patchWorktree, DELETE as deleteWorktree } 
 
 const prisma = new PrismaClient({
   datasources: {
-    db: { url: "postgresql://sm:sm_local@localhost:5432/status_manager_test" },
+    db: { url: "postgresql://sm:sm_local@localhost:5434/status_manager_test" },
   },
 });
 
