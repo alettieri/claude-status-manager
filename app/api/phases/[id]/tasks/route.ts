@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { TaskStatus } from "@prisma/client";
+import { TaskStatus } from "@/prisma/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { handlePrismaError } from "@/lib/prisma-errors";
 

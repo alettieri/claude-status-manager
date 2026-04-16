@@ -17,8 +17,10 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.3",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
     "commander": "latest",
+    "dotenv": "^17.4.2",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"
@@ -27,7 +29,7 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "prisma": "^6.19.3",
+    "prisma": "^7.7.0",
     "typescript": "latest",
     "vitest": "^3.2.4"
   },

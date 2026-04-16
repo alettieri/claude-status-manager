@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma, WorktreeStage } from "@prisma/client";
+import { Prisma, WorktreeStage } from "@/prisma/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 type Params = { params: Promise<{ id: string }> };

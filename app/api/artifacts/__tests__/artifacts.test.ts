@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/prisma/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { writeFileSync, mkdirSync, rmSync } from "fs";
 import path from "path";
 import { GET as listArtifacts, POST as createArtifact } from "../../worktrees/[id]/artifacts/route";
@@ -12,11 +13,10 @@ import { POST as syncWorktree } from "../../worktrees/[id]/sync/route";
 // Shared Prisma client for seeding test data
 // ---------------------------------------------------------------------------
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: { url: "postgresql://sm:sm_local@localhost:5434/status_manager_test" },
-  },
+const adapter = new PrismaPg({
+  connectionString: "postgresql://sm:sm_local@localhost:5434/status_manager_test",
 });
+const prisma = new PrismaClient({ adapter });
 
 // ---------------------------------------------------------------------------
 // Helpers

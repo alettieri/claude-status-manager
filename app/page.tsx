@@ -1,7 +1,7 @@
 import { getAllProjects } from "@/lib/services/projects";
 import { getAllWorktreesWithProject } from "@/lib/services/worktrees";
 import { STAGES, STAGE_LABELS, STAGE_COLORS } from "@/lib/stages";
-import { WorktreeStage } from "@prisma/client";
+import { WorktreeStage } from "@/prisma/generated/prisma/client";
 import { RefreshButton } from "./components/RefreshButton";
 import { WorktreeCard } from "./components/WorktreeCard";
 import { AutoRefresh } from "./components/AutoRefresh";

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { NextRequest } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/prisma/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { GET as getPlanForWorktree, POST as createPlan } from "../../worktrees/[id]/plan/route";
 import { POST as importPlan } from "../../worktrees/[id]/plan/import/route";
 import { GET as exportPlan } from "../../worktrees/[id]/plan/export/route";
@@ -12,11 +13,10 @@ import { GET as getPhase, PATCH as patchPhase, DELETE as deletePhase } from "../
 // Shared Prisma client for seeding test data
 // ---------------------------------------------------------------------------
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: { url: "postgresql://sm:sm_local@localhost:5434/status_manager_test" },
-  },
+const adapter = new PrismaPg({
+  connectionString: "postgresql://sm:sm_local@localhost:5434/status_manager_test",
 });
+const prisma = new PrismaClient({ adapter });
 
 // ---------------------------------------------------------------------------
 // Helpers

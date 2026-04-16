@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { WorktreeStage } from "@prisma/client";
+import { WorktreeStage } from "@/prisma/generated/prisma/client";
 
 type TaskSummary = {
   total: number;

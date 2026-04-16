@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ArtifactType, WorktreeStage } from "@prisma/client";
+import { ArtifactType, WorktreeStage } from "@/prisma/generated/prisma/client";
 import { promises as fs } from "fs";
 import path from "path";
 import { prisma } from "@/lib/prisma";

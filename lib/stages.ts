@@ -1,4 +1,4 @@
-import { WorktreeStage } from "@prisma/client";
+import { WorktreeStage } from "@/prisma/generated/prisma/client";
 
 export const STAGES: WorktreeStage[] = ["IDEA", "SPEC", "PRD", "PLAN", "EXECUTING", "DONE"];
 
