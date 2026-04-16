@@ -44,9 +44,9 @@ Open http://localhost:4000 for the dashboard.
 ### Register a project and worktrees
 
 ```bash
-sm project add productiv --path /Users/you/projects/productiv/main
-sm worktree add auth-system --project productiv --path /Users/you/projects/productiv/auth --branch feature/auth
-sm worktree add dashboard --project productiv --path /Users/you/projects/productiv/dashboard --branch feature/dashboard
+sm project add project --path /Users/you/projects/project/main
+sm worktree add auth-system --project project --path /Users/you/projects/project/auth --branch feature/auth
+sm worktree add dashboard --project project --path /Users/you/projects/project/dashboard --branch feature/dashboard
 ```
 
 ### Sync existing docs

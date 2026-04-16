@@ -3,6 +3,8 @@ const { resolve } = require("path");
 const { api } = require("../lib/api");
 const { printJson, printTable } = require("../lib/output");
 
+const VALID_PLAN_STATUSES = ["DRAFT", "ACTIVE", "COMPLETED", "ARCHIVED"];
+
 const PHASE_STATUS_COLORS = {
   PENDING: "",
   IN_PROGRESS: "→",
@@ -129,6 +131,54 @@ planCommand
         printJson(result);
       } else {
         process.stdout.write(result.markdown);
+      }
+    } catch (err) {
+      console.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+planCommand
+  .command("update <id>")
+  .description("Update a plan's status, title, or description")
+  .option("--status <status>", `New status (${VALID_PLAN_STATUSES.join("|")})`)
+  .option("--title <title>", "New title")
+  .option("--description <description>", "New description")
+  .option("--json", "Output as JSON")
+  .action(async (id, opts) => {
+    try {
+      const updates = {};
+
+      if (opts.status !== undefined) {
+        const statusUpper = opts.status.toUpperCase();
+        if (!VALID_PLAN_STATUSES.includes(statusUpper)) {
+          console.error(
+            `Error: Invalid status '${opts.status}'. Must be one of: ${VALID_PLAN_STATUSES.join(", ")}`
+          );
+          process.exit(1);
+        }
+        updates.status = statusUpper;
+      }
+
+      if (opts.title !== undefined) updates.title = opts.title;
+      if (opts.description !== undefined) updates.description = opts.description;
+
+      if (Object.keys(updates).length === 0) {
+        console.error(
+          "Error: Provide at least one field to update (--status, --title, --description)"
+        );
+        process.exit(1);
+      }
+
+      const updated = await api.patch(`/api/plans/${id}`, updates);
+
+      if (opts.json) {
+        printJson(updated);
+      } else {
+        process.stdout.write(`Updated plan ${id.slice(0, 8)} '${updated.title}'\n`);
+        if (updates.status) {
+          process.stdout.write(`  Status: ${updated.status}\n`);
+        }
       }
     } catch (err) {
       console.error(`Error: ${err.message}`);
