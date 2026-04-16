@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "skills:install": "cp -r skills/* ~/.claude/skills/ && cp agents/* ~/.claude/agents/"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.7.0",

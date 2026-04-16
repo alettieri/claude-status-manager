@@ -37,7 +37,7 @@ A standalone local application backed by PostgreSQL that:
 | Field       | Type     | Description                  |
 |-------------|----------|------------------------------|
 | id          | UUID     | Primary key                  |
-| name        | String   | Project name (e.g., "productiv") |
+| name        | String   | Project name (e.g., "project") |
 | description | String?  | Optional description         |
 | basePath    | String   | Absolute path to git repo root |
 | createdAt   | DateTime | Auto-set                     |
