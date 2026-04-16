@@ -94,11 +94,14 @@ sm criteria check <id>      # mark a criterion checked
 sm criteria uncheck <id>    # unmark a criterion (corrections)
 ```
 
-One new subcommand under `sm task`:
+New subcommands under `sm task`:
 
 ```bash
 sm task criteria <task-id>  # list criteria with IDs and check state
+sm task remove <id>         # delete a task (and its criteria)
 ```
+
+Note: `sm task add <phase-id> --subject <text> --order <n>` already exists and is unchanged.
 
 Example output of `sm task criteria <task-id>`:
 
