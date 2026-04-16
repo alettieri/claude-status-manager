@@ -89,15 +89,19 @@ function StatusIndicator({ status }: { status: string }) {
         flexShrink: 0,
       }}
     >
-      <span
-        style={{
-          width: 7,
-          height: 7,
-          borderRadius: "50%",
-          background: cfg.dot,
-          flexShrink: 0,
-        }}
-      />
+      {status === "COMPLETED" ? (
+        <span style={{ fontSize: 11, lineHeight: 1 }}>✓</span>
+      ) : (
+        <span
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: "50%",
+            background: cfg.dot,
+            flexShrink: 0,
+          }}
+        />
+      )}
       {cfg.label}
     </span>
   );

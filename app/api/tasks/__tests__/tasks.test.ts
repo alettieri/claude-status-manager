@@ -1,22 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { NextRequest } from "next/server";
-import { PrismaClient } from "@/prisma/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { GET as listTasks, POST as createTask } from "../../phases/[id]/tasks/route";
 import { POST as claimNextTask } from "../../phases/[id]/tasks/next/route";
 import { GET as getTask, PATCH as patchTask, DELETE as deleteTask } from "../[id]/route";
 import { POST as completeTask } from "../[id]/complete/route";
 import { POST as failTask } from "../[id]/fail/route";
 import { GET as getActiveTasks } from "../active/route";
-
-// ---------------------------------------------------------------------------
-// Shared Prisma client for seeding test data
-// ---------------------------------------------------------------------------
-
-const adapter = new PrismaPg({
-  connectionString: "postgresql://sm:sm_local@localhost:5434/status_manager_test",
-});
-const prisma = new PrismaClient({ adapter });
+import { seedProject, seedWorktree, seedPlan, seedPhase, seedTask } from "./test-helpers";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -32,35 +22,6 @@ function makeRequest(method: string, url: string, body?: unknown): NextRequest {
 
 function makeParams(id: string) {
   return { params: Promise.resolve({ id }) };
-}
-
-async function seedProject(name = "test-project") {
-  return prisma.project.create({ data: { name, basePath: `/tmp/${name}` } });
-}
-
-async function seedWorktree(projectId: string, name = "test-wt") {
-  return prisma.worktree.create({
-    data: { projectId, name, path: `/tmp/${name}`, branch: "main" },
-  });
-}
-
-async function seedPlan(worktreeId: string, title = "Test Plan") {
-  return prisma.plan.create({ data: { worktreeId, title } });
-}
-
-async function seedPhase(planId: string, name: string, order: number) {
-  return prisma.phase.create({ data: { planId, name, order } });
-}
-
-async function seedTask(
-  phaseId: string,
-  subject: string,
-  order: number,
-  overrides: Record<string, unknown> = {}
-) {
-  return prisma.task.create({
-    data: { phaseId, subject, order, ...overrides },
-  });
 }
 
 // ---------------------------------------------------------------------------

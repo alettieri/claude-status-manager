@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getWorktreeDetail } from "@/lib/services/worktrees";
 import { STAGE_LABELS, STAGE_COLORS } from "@/lib/stages";
 import { PhaseCard } from "./PhaseCard";
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 export const revalidate = 0;
 
@@ -29,6 +30,7 @@ export default async function WorktreeDetailPage({ params, searchParams }: Props
 
   return (
     <div style={{ minHeight: "100vh" }}>
+      <AutoRefresh intervalMs={5000} />
       {/* Header */}
       <header
         style={{
