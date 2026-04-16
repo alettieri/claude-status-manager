@@ -38,6 +38,11 @@ export async function getWorktreeDetail(id: string) {
               _count: { select: { tasks: true } },
               tasks: {
                 orderBy: { order: "asc" },
+                include: {
+                  criteria: {
+                    orderBy: { order: "asc" },
+                  },
+                },
               },
             },
           },

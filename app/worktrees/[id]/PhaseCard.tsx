@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 
+type Criterion = {
+  id: string;
+  text: string;
+  checked: boolean;
+  order: number;
+};
+
 type Task = {
   id: string;
   order: number;
@@ -10,6 +17,7 @@ type Task = {
   status: string;
   agentId: string | null;
   result: string | null;
+  criteria: Criterion[];
 };
 
 type Phase = {
@@ -124,8 +132,54 @@ function TaskStatusDot({ status }: { status: string }) {
   );
 }
 
+const CHECKED_RE = /^-\s*\[x\]/i;
+const STRIP_RE = /^-\s*\[[ x]\]\s*/i;
+
+function ChecklistItem({ text, checked }: { text: string; checked: boolean }) {
+  return (
+    <li
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 8,
+        fontSize: 12,
+        color: checked ? "var(--text-muted)" : "var(--text)",
+        opacity: checked ? 0.65 : 1,
+      }}
+    >
+      <span
+        style={{
+          width: 14,
+          height: 14,
+          border: `1px solid ${checked ? "var(--accent-done)" : "var(--border)"}`,
+          borderRadius: 3,
+          background: checked ? "var(--accent-done)" : "transparent",
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: 1,
+        }}
+      >
+        {checked && (
+          <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+            <path
+              d="M1 3.5L3.5 6L8 1"
+              stroke="white"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
+      </span>
+      <span style={{ lineHeight: 1.5 }}>{text}</span>
+    </li>
+  );
+}
+
 /**
- * Renders a single criterion line from the raw stored markdown checkbox list.
+ * Renders a criterion list from the raw stored markdown checkbox list.
  * Supports both `- [ ] text` and `- [x] text` formats.
  */
 function CriteriaList({ raw }: { raw: string }) {
@@ -146,48 +200,9 @@ function CriteriaList({ raw }: { raw: string }) {
       }}
     >
       {lines.map((line, i) => {
-        const checked = /^-\s*\[x\]/i.test(line);
-        const text = line.replace(/^-\s*\[[ x]\]\s*/i, "");
-        return (
-          <li
-            key={i}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 8,
-              fontSize: 12,
-              color: checked ? "var(--accent-done)" : "var(--text)",
-            }}
-          >
-            <span
-              style={{
-                width: 14,
-                height: 14,
-                border: `1px solid ${checked ? "var(--accent-done)" : "var(--border)"}`,
-                borderRadius: 3,
-                background: checked ? "var(--accent-done)" : "transparent",
-                flexShrink: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 1,
-              }}
-            >
-              {checked && (
-                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                  <path
-                    d="M1 3.5L3.5 6L8 1"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-            </span>
-            <span style={{ lineHeight: 1.5 }}>{text}</span>
-          </li>
-        );
+        const checked = CHECKED_RE.test(line);
+        const text = line.replace(STRIP_RE, "");
+        return <ChecklistItem key={i} text={text} checked={checked} />;
       })}
     </ul>
   );
@@ -263,6 +278,28 @@ function TaskRow({ task }: { task: Task }) {
             </span>
           )}
         </div>
+
+        {/* Task-level acceptance criteria — read-only checklist */}
+        {task.criteria.length > 0 && (
+          <ul
+            style={{
+              margin: "6px 0 0",
+              padding: 0,
+              listStyle: "none",
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+            }}
+          >
+            {task.criteria.map((criterion) => (
+              <ChecklistItem
+                key={criterion.id}
+                text={criterion.text}
+                checked={criterion.checked}
+              />
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Status label */}
